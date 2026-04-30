@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIKA Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080c10;
+      --bg2: #0d1117;
+      --bg3: #111820;
+      --surface: #161d27;
+      --border: rgba(255,255,255,0.06);
+      --accent: #4af0c4;
+      --accent2: #1a7aff;
+      --text: #e8edf3;
+      --muted: #6b7d8f;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* NOISE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      background: rgba(8,12,16,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,240,196,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,240,196,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,240,196,0.07) 0%, transparent 70%);
+      top: 50%;
+      right: 5%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .hero-glow2 {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,122,255,0.06) 0%, transparent 70%);
+      bottom: 10%;
+      left: 20%;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 0.9s ease both;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(74,240,196,0.2);
+      border-radius: 100px;
+      background: rgba(74,240,196,0.04);
+    }
+
+    .hero-label::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 .accent { color: var(--accent); }
+    h1 .dim { color: var(--muted); }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin-bottom: 2.5rem;
+      line-height: 1.8;
+    }
+
+    .hero-full {
+      font-size: 0.8rem;
+      color: rgba(107,125,143,0.6);
+      letter-spacing: 0.06em;
+      font-weight: 400;
+    }
+
+    /* SECTIONS */
+    section {
+      padding: 7rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 3rem;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin: 0;
+    }
+
+    /* ABOUT */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      font-size: 1rem;
+    }
+
+    .about-text p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .about-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      padding: 1.8rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .stat-card:hover { border-color: rgba(74,240,196,0.2); }
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    /* RESEARCH */
+    #research { background: var(--bg2); max-width: 100%; padding: 7rem 0; }
+    #research .inner { max-width: 1200px; margin: 0 auto; padding: 0 4rem; }
+
+    .research-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .research-card {
+      padding: 2.2rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .research-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(74,240,196,0.03) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .research-card:hover {
+      border-color: rgba(74,240,196,0.15);
+      transform: translateY(-2px);
+    }
+
+    .research-card:hover::after { opacity: 1; }
+
+    .research-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(74,240,196,0.08);
+      border: 1px solid rgba(74,240,196,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+      font-size: 1.2rem;
+    }
+
+    .research-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+      color: var(--text);
+    }
+
+    .research-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(74,240,196,0.07);
+      border: 1px solid rgba(74,240,196,0.15);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    /* PUBLICATIONS */
+    .pub-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .pub-item {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1.8rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.3s;
+      align-items: flex-start;
+    }
+
+    .pub-item:hover { border-color: rgba(74,240,196,0.15); }
+
+    .pub-year {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      min-width: 48px;
+      padding-top: 0.2rem;
+    }
+
+    .pub-content h4 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+      line-height: 1.5;
+    }
+
+    .pub-content p {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .pub-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+      background: rgba(26,122,255,0.1);
+      color: #6aafff;
+      border: 1px solid rgba(26,122,255,0.2);
+    }
+
+    /* CONTACT */
+    #contact { background: var(--bg2); max-width: 100%; padding: 7rem 0; }
+    #contact .inner { max-width: 1200px; margin: 0 auto; padding: 0 4rem; }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .contact-info p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .contact-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .contact-row-icon {
+      font-size: 1rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(74,240,196,0.06);
+      border-radius: 8px;
+    }
+
+    .contact-row-text {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .contact-row-text strong {
+      display: block;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.8rem;
+      margin-bottom: 0.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .apply-box {
+      padding: 2.5rem;
+      background: linear-gradient(135deg, rgba(74,240,196,0.05) 0%, rgba(26,122,255,0.05) 100%);
+      border: 1px solid rgba(74,240,196,0.15);
+      border-radius: 16px;
+    }
+
+    .apply-box h3 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .apply-box p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.8;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.8rem;
+      background: var(--accent);
+      color: #080c10;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.02em;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #6ff5d2;
+      transform: translateY(-1px);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 2rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .footer-logo span { color: var(--accent); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      #hero, section { padding: 5rem 1.5rem; }
+      #research .inner, #contact .inner { padding: 5rem 1.5rem; }
+      h1 { font-size: 2.8rem; }
+      .about-grid, .research-grid, .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+      footer { flex-direction: column; gap: 1rem; padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#hero" class="nav-logo"><span>PIKA</span> Lab</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#publications">Publications</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-content">
+      <div class="hero-label">AI Research Lab</div>
+      <h1>
+        <span class="accent">Personalized</span><br/>
+        Intelligence &<br/>
+        <span class="dim">Knowledge</span> Adaptation
+      </h1>
+      <p class="hero-sub">
+        사용자와 환경에 맞게 진화하는 개인화 지능을 연구합니다.<br/>
+        온디바이스 소형 모델부터 연합학습, 연속학습, 언러닝까지.
+      </p>
+      <p class="hero-full">P · I · K · A &nbsp;&nbsp;—&nbsp;&nbsp; Personalized Intelligence & Knowledge Adaptation</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="fade-in">
+      <div class="section-label">About the Lab</div>
+      <h2>지식(모델)을 상황·사용자·환경에<br/>맞게 바꾸는 연구</h2>
+    </div>
+    <div class="about-grid fade-in">
+      <div class="about-text">
+        <p>
+          <strong>PIKA 연구실</strong>은 개인화된 지능을 구현하기 위한 머신러닝 알고리즘과 응용 시스템을 연구합니다.
+        </p>
+        <p>
+          단 하나의 모델이 모든 사용자에게 동일하게 동작하는 AI가 아닌, <strong>사용자 각자에게 최적화된 개인화 지능</strong>을 만드는 것이 목표입니다.
+        </p>
+        <p>
+          모델 배포 이후 사용자 데이터가 축적되는 과정에서 <strong>어떻게 지속적으로 개인화할 것인가</strong>를 핵심 문제로 삼으며, 온디바이스 소형 언어모델을 주요 연구 대상으로 합니다.
+        </p>
+        <p>
+          헬스케어, 심리상담 등 민감한 영역의 현장 문제를 연구로 연결하고, 그 성과를 다시 현장에 돌려주는 산학 협력을 지향합니다.
+        </p>
+      </div>
+      <div class="about-stats">
+        <div class="stat-card">
+          <div class="stat-num">On-device</div>
+          <div class="stat-label">소형 언어모델 기반 개인화 지능</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">Post-deploy</div>
+          <div class="stat-label">배포 이후 지속적 모델 적응 연구</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">Privacy-first</div>
+          <div class="stat-label">데이터를 기기 밖으로 내보내지 않는 학습</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- RESEARCH -->
+  <div id="research">
+    <div class="inner">
+      <div class="fade-in">
+        <div class="section-label">Research Areas</div>
+        <h2>연구 분야</h2>
+      </div>
+      <div class="research-grid fade-in">
+        <div class="research-card">
+          <div class="research-icon">🤝</div>
+          <h3>개인화 연합학습</h3>
+          <p>다수의 사용자가 데이터를 공유하지 않고 협력하여 모델을 학습하는 연합학습 기법에서, 개별 사용자에 최적화된 개인화 모델을 만드는 방법을 연구합니다.</p>
+          <span class="tag">Federated Learning</span>
+        </div>
+        <div class="research-card">
+          <div class="research-icon">🔄</div>
+          <h3>연속학습 (Continual Learning)</h3>
+          <p>새로운 데이터를 학습하면서도 이전 지식을 잊지 않는 모델 안정성 유지 기법을 연구합니다. 파괴적 망각 문제를 해결하는 것이 핵심 과제입니다.</p>
+          <span class="tag">Continual Learning</span>
+        </div>
+        <div class="research-card">
+          <div class="research-icon">🗑️</div>
+          <h3>연합 언러닝 (Federated Unlearning)</h3>
+          <p>학습된 모델에서 특정 사용자의 데이터 흔적을 선택적으로 삭제하는 Machine Unlearning 기법을 연구합니다. 잊혀질 권리와 AI 신뢰성을 동시에 다룹니다.</p>
+          <span class="tag">Machine Unlearning</span>
+        </div>
+        <div class="research-card">
+          <div class="research-icon">📱</div>
+          <h3>온디바이스 학습</h3>
+          <p>스마트폰 등 엣지 디바이스에서 직접 모델을 학습하고 추론하는 경량화 기법을 연구합니다. 소형 언어모델(sLLM)의 개인화 미세조정이 주요 연구 주제입니다.</p>
+          <span class="tag">On-device AI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PUBLICATIONS -->
+  <section id="publications">
+    <div class="fade-in">
+      <div class="section-label">Publications & Projects</div>
+      <h2>논문 & 프로젝트</h2>
+    </div>
+    <div class="pub-list fade-in">
+      <div class="pub-item">
+        <div class="pub-year">진행중</div>
+        <div class="pub-content">
+          <h4>심리상담 영역 AI 모델의 치료적 효과 향상을 위한 개인화 지능 구현 <span class="pub-badge">Project</span></h4>
+          <p>심리상담 도메인에서 온디바이스 소형 언어모델의 개인화 미세조정 연구</p>
+        </div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-year">완료</div>
+        <div class="pub-content">
+          <h4>헬스케어 데이터 기반 개인화 헬스코치 소형 언어모델 미세조정 <span class="pub-badge">Industry</span></h4>
+          <p>스마트폰 누적 헬스케어 데이터를 활용한 온디바이스 챗봇 개인화 — 스타트업 협업 프로젝트</p>
+        </div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-year">진행중</div>
+        <div class="pub-content">
+          <h4>RAG 임베딩 모델의 개인화 및 분산 연합학습 <span class="pub-badge">Industry</span></h4>
+          <p>검색증강생성(RAG) 시스템에 적용되는 임베딩 모델의 개인화와 연합학습 기법 연구 — 산학 협업</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CONTACT -->
+  <div id="contact">
+    <div class="inner">
+      <div class="fade-in">
+        <div class="section-label">Contact & Join Us</div>
+        <h2>연락처 & 지원 안내</h2>
+      </div>
+      <div class="contact-grid fade-in">
+        <div class="contact-info">
+          <p>
+            사이버대학교 대학원 연구실이라는 공간이 낯설고 막막하게 느껴지더라도 괜찮습니다.
+            자신의 분야에서 한 단계 도약하고 싶은 열정이 있다면 누구든 환영합니다.
+          </p>
+          <div class="contact-detail">
+            <div class="contact-row">
+              <div class="contact-row-icon">📧</div>
+              <div class="contact-row-text">
+                <strong>Email</strong>
+                pika-lab@university.ac.kr
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="contact-row-icon">🏫</div>
+              <div class="contact-row-text">
+                <strong>Institution</strong>
+                OO사이버대학교 대학원
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="contact-row-icon">📍</div>
+              <div class="contact-row-text">
+                <strong>Location</strong>
+                Seoul, Korea
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="apply-box">
+          <h3>함께할 분을 기다립니다</h3>
+          <p>
+            다양한 현장의 문제를 함께 고민하며 사용자를 진정으로 이해하는 개인화 지능을 만들어가는 여정에 함께할 분을 기다립니다.
+            연구실이 막 시작되는 시점인 만큼, 처음부터 함께 만들어가는 경험을 나눌 수 있습니다.
+          </p>
+          <a href="mailto:pika-lab@university.ac.kr" class="btn">
+            지원 문의하기 →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo"><span>PIKA</span> Lab</div>
+    <p>Personalized Intelligence & Knowledge Adaptation Lab</p>
+    <p>© 2025 PIKA Lab. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Scroll fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
